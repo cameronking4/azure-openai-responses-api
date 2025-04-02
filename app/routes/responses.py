@@ -58,11 +58,14 @@ async def generate_text_response(request: TextRequest):
             truncation=request.truncation
         )
         
+        # Convert usage to dictionary if it's not already
+        usage_dict = response.usage.model_dump() if hasattr(response.usage, "model_dump") else response.usage
+        
         return {
             "response_id": response.id,
             "output": response.output_text,
             "status": response.status,
-            "usage": response.usage,
+            "usage": usage_dict,
             "raw_response": response.model_dump()
         }
     except Exception as e:
@@ -78,11 +81,14 @@ async def generate_tool_calling_response(request: ToolCallingRequest):
             truncation=request.truncation
         )
         
+        # Convert usage to dictionary if it's not already
+        usage_dict = response.usage.model_dump() if hasattr(response.usage, "model_dump") else response.usage
+        
         return {
             "response_id": response.id,
             "output": response.output_text if hasattr(response, "output_text") else str(response.output),
             "status": response.status,
-            "usage": response.usage,
+            "usage": usage_dict,
             "raw_response": response.model_dump()
         }
     except Exception as e:
@@ -111,11 +117,14 @@ async def generate_text_and_image_response(request: TextAndImageRequest):
             truncation=request.truncation
         )
         
+        # Convert usage to dictionary if it's not already
+        usage_dict = response.usage.model_dump() if hasattr(response.usage, "model_dump") else response.usage
+        
         return {
             "response_id": response.id,
             "output": response.output_text if hasattr(response, "output_text") else str(response.output),
             "status": response.status,
-            "usage": response.usage,
+            "usage": usage_dict,
             "raw_response": response.model_dump()
         }
     except Exception as e:

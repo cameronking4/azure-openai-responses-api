@@ -1,6 +1,6 @@
 # Azure OpenAI Responses API
 
-A simple Python API that interfaces with Azure OpenAI's Responses API. This API supports text, tool calling, and text+image inputs.
+A simple Python API that interfaces with Azure OpenAI's Responses API. This API supports text, tool calling, and text+image inputs. Based on example code from https://github.com/guygregory/Responses-API/tree/main
 
 ## Features
 
@@ -9,10 +9,6 @@ A simple Python API that interfaces with Azure OpenAI's Responses API. This API 
 - **Text and Image Endpoint**: Process multimodal inputs with text and images
 
 ## Implementation Note
-
-This API provides a mock implementation of the Azure OpenAI Responses API for development and testing purposes. The mock implementation simulates the behavior of the real API without making actual calls to Azure OpenAI.
-
-When you're ready to use the real Azure OpenAI API, you can uncomment the real client initialization in `app/routes/responses.py` and ensure your Azure OpenAI credentials are correctly set in the `.env` file.
 
 The API supports:
 - Text generation
