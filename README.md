@@ -7,6 +7,7 @@ A simple Python API that interfaces with Azure OpenAI's Responses API. This API 
 - **Text Endpoint**: Send text prompts to Azure OpenAI
 - **Tool Calling Endpoint**: Use function calling capabilities
 - **Text and Image Endpoint**: Process multimodal inputs with text and images
+- **File Search Endpoint**: Upload files and ask questions about them
 
 ## Implementation Note
 
@@ -92,6 +93,59 @@ Response:
 }
 ```
 
+### File Search
+
+```
+POST /api/file-search
+```
+
+This endpoint accepts multipart form data with file uploads and uses Azure OpenAI's file search capability to answer questions based on the uploaded files.
+
+Request parameters (multipart form):
+- `input_text` (required): The query or question to ask about the files
+- `files` (required): One or more files to upload and search
+- `vector_store_name` (optional): Name for the temporary vector store (default: "Temporary Vector Store")
+- `max_results` (optional): Maximum number of results to return (default: 20)
+- `delete_after` (optional): Whether to delete the vector store after the query (default: true)
+- `truncation` (optional): Truncation strategy (default: "auto")
+
+Example usage:
+```python
+import requests
+
+url = "http://localhost:8000/api/file-search"
+
+# Open the file for upload
+with open("document.pdf", "rb") as f:
+    # Create the form data
+    files = {"files": ("document.pdf", f)}
+    data = {
+        "input_text": "What are the key points in this document?",
+        "vector_store_name": "My Document Store",
+        "max_results": 10,
+        "delete_after": True
+    }
+    
+    # Make the request
+    response = requests.post(url, files=files, data=data)
+    
+    if response.status_code == 200:
+        result = response.json()
+        print(result["output"])
+```
+
+Test scripts are provided to demonstrate this functionality:
+```
+python test_file_search.py           # Basic file search example
+python advanced_file_search_example.py  # Advanced example with multiple file types
+```
+
+The advanced example includes:
+- A reusable `FileSearchClient` class for easy integration
+- Support for multiple file types (txt, md, json, etc.)
+- Sample files created on-the-fly for testing
+- Multiple query examples to demonstrate capabilities
+
 ### Tool Calling
 
 ```
@@ -118,6 +172,58 @@ Request body:
   ]
 }
 ```
+
+#### Supported Tool Types
+
+The `type` field in the tool object must be one of the following supported values:
+
+- `function` - For function calling
+- `code_interpreter` - For code interpretation
+- `file_search` - For searching files
+- `web_search` - For web search
+- `web_search_preview` - For web search preview
+- `web_search_preview_2025_03_11` - For web search preview (2025-03-11 version)
+- `computer-preview` - For computer preview
+- `computer_use_preview` - For computer use preview
+- `bing_grounding` - For Bing grounding
+- `openapi` - For OpenAPI specification
+
+#### Testing Tool Calling
+
+You can test the tool calling functionality using the provided `test_tool_calling.py` script:
+
+```
+python test_tool_calling.py
+```
+
+This script tests both the local API server and makes a direct call to the Azure OpenAI API to verify that tool calling works correctly.
+
+#### Example Clients
+
+Several example client implementations are provided:
+
+1. **Basic Client** (`example_tool_calling_client.py`):
+   ```
+   python example_tool_calling_client.py
+   ```
+   This script demonstrates how to use the tool calling API with different types of tools:
+   - Weather tool (function type)
+   - Calculator tool (function type)
+   - Search tool (web_search type)
+   - Multiple tools in a single request
+
+2. **Complete Tool Calling Example** (`complete_tool_calling_example.py`):
+   ```
+   python complete_tool_calling_example.py
+   ```
+   This script demonstrates a complete tool calling workflow:
+   - Making the initial request to the API
+   - Parsing tool calls from the response
+   - Executing the tools with the provided arguments
+   - Sending the tool results back to the API
+   - Displaying the final response
+
+   This example is particularly useful for understanding how to implement a full tool calling conversation flow with Azure OpenAI.
 
 ### Text and Image
 
