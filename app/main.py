@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from app.routes.responses import router as responses_router
 
 # Create FastAPI app
@@ -18,9 +19,13 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+# Add GZip middleware for compression
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 # Include routers
 app.include_router(responses_router, prefix="/api", tags=["responses"])
 
+# Update the root endpoint to include the new file-search endpoint
 @app.get("/")
 async def root():
     return {
@@ -29,7 +34,8 @@ async def root():
         "endpoints": [
             "/api/text",
             "/api/tool-calling",
-            "/api/text-and-image"
+            "/api/text-and-image",
+            "/api/file-search"
         ]
     }
 
@@ -39,4 +45,13 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "app.main:app", 
+        host="0.0.0.0", 
+        port=8000, 
+        reload=True,
+        # Increase limits for file uploads
+        limit_concurrency=10,
+        limit_max_requests=100,
+        timeout_keep_alive=120
+    )

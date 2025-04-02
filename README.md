@@ -109,6 +109,19 @@ Request parameters (multipart form):
 - `delete_after` (optional): Whether to delete the vector store after the query (default: true)
 - `truncation` (optional): Truncation strategy (default: "auto")
 
+#### Handling Large Files
+
+The API has been configured to handle large file uploads (up to 100MB). If you're experiencing "413 Request Entity Too Large" errors, you may need to:
+
+1. **Configure Nginx**: If you're using Nginx as a reverse proxy, use the provided `nginx.conf` file which includes:
+   ```
+   client_max_body_size 100M;
+   ```
+
+2. **Adjust FastAPI Settings**: The server has been configured with chunked file reading to handle large files efficiently.
+
+3. **Modify Uvicorn Settings**: The `run.py` file includes optimized settings for handling large file uploads.
+
 Example usage:
 ```python
 import requests

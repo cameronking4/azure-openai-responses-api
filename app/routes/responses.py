@@ -179,11 +179,11 @@ async def generate_text_and_image_response(request: TextAndImageRequest):
 @router.post("/file-search", response_model=ResponseOutput)
 async def generate_file_search_response(
     input_text: str = Form(...),
-    files: List[UploadFile] = File(...),
-    vector_store_name: Optional[str] = Form("Temporary Vector Store"),
-    max_results: Optional[int] = Form(20),
-    delete_after: Optional[bool] = Form(True),
-    truncation: Optional[str] = Form("auto")
+    files: List[UploadFile] = File(..., description="Files to search through (PDF, DOCX, TXT, etc.)"),
+    vector_store_name: Optional[str] = Form("Temporary Vector Store", description="Name for the temporary vector store"),
+    max_results: Optional[int] = Form(20, description="Maximum number of results to return"),
+    delete_after: Optional[bool] = Form(True, description="Whether to delete the vector store after the query"),
+    truncation: Optional[str] = Form("auto", description="Truncation strategy")
 ):
     try:
         # Create a temporary vector store
@@ -202,8 +202,15 @@ async def generate_file_search_response(
             
             # Save the uploaded file
             with open(file_path, "wb") as f:
-                content = await uploaded_file.read()
-                f.write(content)
+                # Read in chunks to handle large files
+                chunk_size = 1024 * 1024  # 1MB chunks
+                content = await uploaded_file.read(chunk_size)
+                while content:
+                    f.write(content)
+                    content = await uploaded_file.read(chunk_size)
+                
+                # Reset file position for reading
+                await uploaded_file.seek(0)
         
         # Open file streams for upload to Azure OpenAI
         file_streams = [open(path, "rb") for path in file_paths]
